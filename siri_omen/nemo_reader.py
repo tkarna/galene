@@ -266,7 +266,7 @@ class NemoStationFileReader(NemoFileReader):
                     callback_func(cube)
                 else:
                     dataset[key] = cube
-            except AssertionError as e:
+            except AssertionError:
                 pass
         if callback_func is None:
             return dataset
@@ -287,9 +287,8 @@ class NemoStationFileReader(NemoFileReader):
         coords = [c.name() for c in cube.coords()]
         if 'depth' not in coords:
             # assume surface time series => depth = 0.0
-            dep_dim = iris.coords.DimCoord(0.0,
-                                            standard_name='depth',
-                                            units='m')
+            dep_dim = iris.coords.DimCoord(
+                0.0, standard_name='depth', units='m')
             cube.add_aux_coord(dep_dim, None)
         else:
             # remove masked depth points
@@ -564,4 +563,4 @@ def concatenate_nemo_station_data(search_pattern, dataset_id, var_list):
         sname = utility.map_var_standard_name[var]
         nemo_var = map_nemo_standard_name.get(sname, sname)
         var_name = nemo_ncvar_name.get(var)
-        dataset = nreader.dump_dataset(nemo_var, var_name=var_name)
+        nreader.dump_dataset(nemo_var, var_name=var_name)
