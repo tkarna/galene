@@ -407,3 +407,14 @@ def compute_cube_statistics(reference, predicted):
     r = reference.data
     p = predicted_alinged.data
     return statistics.compute_statistics(r, p)
+
+
+def crop_invalid_depths(cube):
+    """
+    Removes depth values that have all invalid values.
+    """
+    datatype = get_cube_datatype(cube)
+    assert datatype == 'timeprofile'
+    good_depth = numpy.isfinite(cube.data).any(axis=0)
+    cube2 = cube[:, good_depth]
+    return cube2
