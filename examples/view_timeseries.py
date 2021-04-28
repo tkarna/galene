@@ -9,8 +9,10 @@ from bokeh.palettes import Category10 as palette
 import itertools
 import numpy
 import argparse
-from siri_omen import *
+import siri_omen as so
 import cftime
+from dateutil.parser import parse as dateparse
+import datetime
 
 color_cycle = itertools.cycle(palette[10])
 
@@ -27,13 +29,14 @@ def make_interactive_plot(cube_list):
         datetime_list = time_units.num2date(time_array)
         # convert to python datetime
         datetime_list = [
-            datetime.datetime(d.year, d.month, d.day, d.hour, d.second) for d
+            datetime.datetime(d.year, d.month, d.day, d.hour, d.minute, d.second) for d
             in datetime_list
         ]
         values = cube.data.flatten()
 
         legend = cube.attributes['dataset_id']
-        p.line(datetime_list, values, legend_label=legend, color=next(color_cycle))
+        c = next(color_cycle)
+        p.line(datetime_list, values, legend_label=legend, color=c)
 
     ylabel = '{:} [{:}]'.format(cube.standard_name.replace('_', ' '),
                                 cube.units)
@@ -44,14 +47,15 @@ def make_interactive_plot(cube_list):
     show(p)
 
 
-def load_cubes(file_list):
+def load_cubes(file_list, start_time=None, end_time=None):
     cube_list = []
-    var_list = ['slev', 'temp', 'psal']
+    var_list = ['slev', 'temp', 'psal', 'iceextent', 'icevol']
     for f in file_list:
         c = None
         for v in var_list:
             try:
-                c = load_cube(f, v)
+                c = so.load_cube(f, v,
+                                 start_time=start_time, end_time=end_time)
                 break
             except Exception:
                 pass
@@ -71,8 +75,14 @@ def parse_args():
                         help='a netCDF file to open, multiple values accepted')
     parser.add_argument('--remove-mean', action='store_true',
                         help='remove mean from time series prior to plotting')
+    parser.add_argument('-s', '--startdate',
+                        help='Start date of time series, in format "YYYY-MM-DDTHH" or "YYYY-MM-DD", e.g. "2006-05-01T00".')
+    parser.add_argument('-e', '--enddate',
+                        help='Start date of time series, in format "YYYY-MM-DDTHH" or "YYYY-MM-DD", e.g. "2006-05-03T00".')
     args = parser.parse_args()
-    cube_list = load_cubes(args.files)
+    sd = dateparse(args.startdate)
+    ed = dateparse(args.enddate)
+    cube_list = load_cubes(args.files, start_time=sd, end_time=ed)
     if args.remove_mean:
         for c in cube_list:
             c.data -= c.data.mean()
