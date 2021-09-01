@@ -8,9 +8,8 @@ from . import utility
 
 
 def plot_profile(ax, cube_list, label_attr='dataset_id', xlim=None,
-                 plot_style='line',
-                 label_alias=None,
-                 title=None, **kwargs):
+                 plot_style='line', label_alias=None, title=None,
+                 legend_kwargs=None, **kwargs):
     """
     Plots vertical profile objects in the given axes.
 
@@ -19,7 +18,12 @@ def plot_profile(ax, cube_list, label_attr='dataset_id', xlim=None,
     """
 
     def get_label(cube, attr_name):
-        return cube.attributes.get(attr_name)
+        label = None
+        if attr_name in cube.attributes:
+            label = cube.attributes.get(attr_name)
+        if attr_name == 'date':
+            label = str(utility.get_cube_datetime(cube, 0))
+        return label
 
     if isinstance(plot_style, str):
         style_list = [plot_style] * len(cube_list)
@@ -55,8 +59,12 @@ def plot_profile(ax, cube_list, label_attr='dataset_id', xlim=None,
         ylabel = '{:} / {:}'.format(
             depth_coord.name().capitalize(), depth_coord.units)
         ax.set_ylabel(ylabel)
-    plt.grid(True)
-    plt.legend(loc='upper left', bbox_to_anchor=(1.02, 1.0))
+    ax.grid(True)
+    if legend_kwargs is None:
+        legend_kwargs = {}
+    legend_kwargs.setdefault('loc', 'upper left')
+    legend_kwargs.setdefault('bbox_to_anchor', (1.02, 1.0))
+    ax.legend(**legend_kwargs)
     if xlim is not None:
         if numpy.array(xlim).size > 2:
             cur_xlim = ax.get_xlim()
@@ -69,8 +77,9 @@ def plot_profile(ax, cube_list, label_attr='dataset_id', xlim=None,
                 ax.set_xlim(target_xlim)
         else:
             ax.set_xlim(xlim)
-    # assuming that y axis is depth (positive downwards)
-    ax.invert_yaxis()
+    # set correct y axis orientation (assuming y is depth, positive downwards)
+    ylim = ax.get_ylim()
+    ax.set_ylim(sorted(ylim)[::-1])
     if title is None:
         loc_names = utility.unique([c.attributes['location_name']
                                     for c in cube_list])
@@ -79,7 +88,7 @@ def plot_profile(ax, cube_list, label_attr='dataset_id', xlim=None,
         titles = utility.unique(loc_names)
         title = ', '.join(titles).strip()
         title += ' ' + date_str
-        ax.set_title(title)
+    ax.set_title(title)
 
 
 def save_profile_figure(cube_list, output_dir=None, plot_root_dir=None,
