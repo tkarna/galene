@@ -33,7 +33,7 @@ def plot_scatter(
         x_offset=None, y_offset=None,
         title=None,
         log_scale=False, symmetric_scale=False,
-        cmap=None, vmin=None, vmax=None, colorbar=True,
+        cmap=None, vmin=None, vmax=None, colorbar=True, norm=None,
         show_grid=False, **kwargs):
     """
     Plot a single cube in the given axes
@@ -56,8 +56,7 @@ def plot_scatter(
         vmin = -abs_lim
         vmax = abs_lim
 
-    norm = None
-    if _log_scale:
+    if _log_scale and norm is None:
         norm = matplotlib.colors.LogNorm(vmin=vmin, vmax=vmax)
 
     if cube.attributes['dataset_id'][:5] == 'diff:':
