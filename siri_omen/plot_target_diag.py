@@ -54,7 +54,7 @@ class TargetDiagram(object):
         ax.spines['top'].set_color('none')
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
-        ax.set_xlabel('cRMSE', ha='right', va='bottom')
+        ax.set_xlabel('cRMSD', ha='right', va='bottom')
         ax.set_ylabel('BIAS', ha='right', va='top')
         ax.xaxis.set_label_coords(1.0, 0.505)
         ax.yaxis.set_label_coords(0.51, 1.0)
