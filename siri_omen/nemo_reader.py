@@ -273,13 +273,14 @@ class NemoStationFileReader(NemoFileReader):
                 utility.assert_cube_metadata(cube)
                 utility.assert_cube_valid_data(cube)
                 cube = self.fix_depth_dimension(cube)
-                cube = utility.crop_invalid_depths(cube)
+                if utility.get_cube_datatype(cube) != 'timeseries':
+                    cube = utility.crop_invalid_depths(cube)
                 if callback_func is not None:
                     callback_func(cube)
                 else:
                     dataset[key] = cube
-            except AssertionError:
-                pass
+            except AssertionError as e:
+                print(e)
         if callback_func is None:
             return dataset
 
