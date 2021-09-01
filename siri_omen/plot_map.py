@@ -44,6 +44,7 @@ class GeographicPlot(object):
             ax.set_extent(extent)
 
         if draw_grid:
+            grid_kwargs.setdefault('linewidth', 0.4)
             gl = ax.gridlines(draw_labels=True, zorder=grid_zorder,
                               **grid_kwargs)
             gl.top_labels = False
@@ -84,7 +85,13 @@ class GeographicPlot(object):
             textargs.setdefault('horizontalalignment', 'left')
             textargs.setdefault('verticalalignment', 'top')
             textargs.setdefault('fontsize', 8)
-            txt = self.add_text(x + 0.1, y, label,
+            offset = 0.1
+            ha = textargs['horizontalalignment']
+            if 'ha' in textargs:
+                ha = textargs['ha']
+            if ha == 'right':
+                offset *= -1
+            txt = self.add_text(x + offset, y, label,
                                 transform=transform, **textargs)
         return p, txt
 
