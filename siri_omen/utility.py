@@ -24,7 +24,9 @@ map_var_standard_name = {
     'depth': 'depth',
     'hcsp': 'sea_water_speed',
     'pres': 'sea_water_pressure',
+    'dens': 'sea_water_density',
     'psal': 'sea_water_practical_salinity',
+    'asal': 'sea_water_absolute_salinity',
     'temp': 'sea_water_temperature',
     'ucur': 'eastward_sea_water_velocity',
     'uwnd': 'eastward_wind',
@@ -377,7 +379,7 @@ def generate_img_filename(cube_list, prefix=None, loc_str=None,
 
 def query_netcdf_file(dataset_id, datatype, variable, location_name=None,
                       depth=None, start_time=None, end_time=None,
-                      verbose=False):
+                      verbose=False, root_dir=None):
     args = [dataset_id, datatype, variable]
     file_args = ['*']
     if location_name is None:
@@ -396,6 +398,8 @@ def query_netcdf_file(dataset_id, datatype, variable, location_name=None,
         file_args.append('*')
     filepattern = '_'.join(file_args) + '.nc'
     pattern = f'{dataset_id}/{datatype}/{location_name}/{variable}/{filepattern}'
+    if root_dir is not None:
+        pattern = os.path.join(root_dir, pattern)
     if verbose:
         print('Search pattern: {:}'.format(pattern))
     file_list = glob.glob(pattern)
@@ -504,6 +508,8 @@ def align_cubes(first, second, scheme=None):
     if scheme is None:
         scheme = iris.analysis.Linear(extrapolation_mode='mask')
     o_points = o.coord(coord_name).points
+    assert len(m.coord(coord_name).points) > 1, \
+        'Cannot interpolate with one data point'
     m2 = m.interpolate([(coord_name, o_points)], scheme)
 
     return m2
@@ -559,7 +565,7 @@ def crop_invalid_depths(cube):
     Removes depth values that have all invalid values.
     """
     datatype = get_cube_datatype(cube)
-    assert datatype in ['timeprofile', 'timetransect']
+    assert datatype in ['timeprofile', 'timetransect'], 'Invalid cube datatype'
     depth_ix = cube.coord_dims('depth')
     #assert len(depth_ix) == 1
     depth_ix = depth_ix[0]

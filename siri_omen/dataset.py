@@ -9,7 +9,7 @@ from . import utility
 
 
 def read_dataset(dataset_id, datatype, variable,
-                 location_name=None, depth=None,
+                 location_name=None, depth=None, root_dir=None,
                  start_time=None, end_time=None, verbose=False):
     """
     Read files using pattern
@@ -33,6 +33,7 @@ def read_dataset(dataset_id, datatype, variable,
     """
     file_list = utility.query_netcdf_file(
         dataset_id, datatype, variable, location_name=location_name,
+        root_dir=root_dir,
         depth=depth, start_time=start_time, end_time=end_time, verbose=verbose)
     d = {}
     for f in sorted(file_list):
