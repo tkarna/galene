@@ -34,6 +34,7 @@ var_short_name = {
     'specific_turbulent_kinetic_energy_dissipation_in_sea_water': 'tke dissipation rate',
     'ocean_vertical_heat_diffusivity': 'eddy diffusivity',
     'ocean_vertical_momentum_diffusivity': 'eddy viscosity',
+    'sea_water_absolute_salinity': 'absolute salinity',
 }
 
 
@@ -59,6 +60,7 @@ def plot_timeprofile(cube, ax, title=None,
                      start_time=None, end_time=None,
                      log_scale=False, symmetric_scale=False,
                      label_alias=None,
+                     norm=None,
                      cmap=None, vmin=None, vmax=None, colorbar=True):
     """
     Plot a single cube in the given axes.
@@ -92,8 +94,7 @@ def plot_timeprofile(cube, ax, title=None,
         vmin = -abs_lim
         vmax = abs_lim
 
-    norm = None
-    if _log_scale:
+    if _log_scale and norm is None:
         norm = matplotlib.colors.LogNorm(vmin=vmin, vmax=vmax)
 
     if cube.attributes['dataset_id'][:5] == 'diff:':
@@ -102,7 +103,7 @@ def plot_timeprofile(cube, ax, title=None,
         val_max = numpy.nanmax(numpy.abs(cube.data))
         vmin = -val_max
         vmax = val_max
-
+        norm = None
     p = ax.pcolormesh(t, z, _cube.data.T, vmin=vmin, vmax=vmax, cmap=cmap,
                       norm=norm)
 
