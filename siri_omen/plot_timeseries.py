@@ -18,9 +18,11 @@ plot_unit = {
 
 def plot_timeseries(ax, cube_list, label_attr='dataset_id', time_lim=None,
                     title=None, time_extent=None,
+                    depth_in_title=True,
                     label_alias=None,
                     style=None, ylim=None,
                     add_legend=True, legend_kwargs=None,
+                    variable_alias=None,
                     start_time=None, end_time=None, **kwargs):
     """
     Plots time series objects in the given axes.
@@ -54,6 +56,12 @@ def plot_timeseries(ax, cube_list, label_attr='dataset_id', time_lim=None,
             _c_units.convert_units(plot_unit[var])
         else:
             _c_units = _c
+        if variable_alias is not None:
+            var = _c_units.standard_name
+            if var in variable_alias:
+                new_var = variable_alias[var]
+                _c_units.standard_name = None
+                _c_units.long_name = new_var
         qplt.plot(_c_units, axes=ax, label=label, **kw)
     if add_legend:
         lkw = {'loc': 'upper left', 'bbox_to_anchor': (1.02, 1.0)}
@@ -62,10 +70,13 @@ def plot_timeseries(ax, cube_list, label_attr='dataset_id', time_lim=None,
         ax.legend(**lkw)
     if title is None:
         loc_names = [c.attributes['location_name'] for c in cube_list]
-        dep_strs = ['{:.1f} m'.format(
-            c.coord('depth').points.mean()) for c in cube_list]
-        titles = utility.unique([' '.join(a) for
-                                 a in zip(loc_names, dep_strs)])
+        if depth_in_title:
+            dep_strs = ['{:.1f} m'.format(
+                c.coord('depth').points.mean()) for c in cube_list]
+            titles = utility.unique([' '.join(a) for
+                                    a in zip(loc_names, dep_strs)])
+        else:
+            titles = utility.unique(loc_names)
         title = ', '.join(titles).strip()
     ax.set_title(title)
 
@@ -107,7 +118,8 @@ def plot_timeseries(ax, cube_list, label_attr='dataset_id', time_lim=None,
     ax.set_xlim(start_time, end_time)
     if time_lim is not None:
         ax.set_xlim(time_lim)
-    ax.figure.autofmt_xdate()
+    plt.setp(ax.get_xticklabels(),
+             rotation=30, ha='right', rotation_mode='anchor')
 
     if ylim is not None:
         ax.set_ylim(ylim)
