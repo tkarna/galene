@@ -71,7 +71,7 @@ def parse_args():
         # includes default values in help entries
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument('files', metavar='file', nargs='+',
+    parser.add_argument('-f', '--files', metavar='file', nargs='+',
                         help='a netCDF file to open, multiple values accepted')
     parser.add_argument('--remove-mean', action='store_true',
                         help='remove mean from time series prior to plotting')
@@ -79,10 +79,33 @@ def parse_args():
                         help='Start date of time series, in format "YYYY-MM-DDTHH" or "YYYY-MM-DD", e.g. "2006-05-01T00".')
     parser.add_argument('-e', '--enddate',
                         help='Start date of time series, in format "YYYY-MM-DDTHH" or "YYYY-MM-DD", e.g. "2006-05-03T00".')
+    parser.add_argument('-v', '--variable', help='Variable to read, e.g. "slev"')
+    parser.add_argument('-l', '--location_name', help='Location to read, e.g. "Helsinki"')
+    parser.add_argument('-d', '--datasets', help='Comma-separated list of dataset_id to read, e.g. "obs,run01"')
     args = parser.parse_args()
-    sd = dateparse(args.startdate)
-    ed = dateparse(args.enddate)
-    cube_list = load_cubes(args.files, start_time=sd, end_time=ed)
+    sd = args.startdate
+    if sd is not None:
+        sd = dateparse(sd)
+    ed = args.enddate
+    if ed is not None:
+        ed = dateparse(ed)
+    cube_list = []
+    if args.datasets is not None:
+        assert args.location_name is not None, 'location_name must be set'
+        assert args.variable is not None, 'variable must be set'
+        for dataset_id in args.datasets.split(','):
+            dset = so.read_dataset(
+                dataset_id, 'timeseries', args.variable,
+                location_name=args.location_name,
+                start_time=sd, end_time=ed, verbose=False
+            )
+            c_list = list(dset.values())
+            cube_list.extend(c_list)
+    if args.files is not None:
+        c_list = load_cubes(args.files, start_time=sd, end_time=ed)
+        cube_list.extend(c_list)
+    if len(cube_list) == 0:
+        raise Exception('No timeseries data loaded. Either files or datasets must be defined')
     if args.remove_mean:
         for c in cube_list:
             c.data -= c.data.mean()
