@@ -65,6 +65,7 @@ map_short_datatype = {
     'profile': 'prof',
     'timeprofile': 'tprof',
     'timetransect': 'trans',
+    'transect': 'trans',
     'surfacetrack': 'strack',
 }
 
@@ -206,16 +207,17 @@ def get_cube_datatype(cube):
     Detect cube datatype.
 
     Supported datatypes are:
-    point        - ()
-    timeseries   - (time), scalar (depth)
-    surfacetrack - (time), aux (latitude,longitude), scalar (depth)
-    profile      - (depth)
+    timeseries   - (time), scalar depth
+    surfacetrack - (time), aux latitude, longitude, scalar depth
+    profile      - (depth), scalar latitude, longitude
     timeprofile  - (time, depth)
+    transect - (depth, index), aux latitude, longitude, depth
     timetransect - (time, depth, index)
     """
     # gather coordinate names
     dim_coords = [c.name() for c in cube.dim_coords]
     aux_coords = [c.name() for c in cube.aux_coords if len(c.points) > 1]
+    dim_or_aux_coords = dim_coords + aux_coords
     scalar_coords = [c.name() for c in cube.aux_coords if len(c.points) == 1]
     ndims = len(cube.shape)
 
@@ -231,8 +233,12 @@ def get_cube_datatype(cube):
         datatype = 'profile'
     elif (ndims == 2 and 'time' in dim_coords and 'depth' in dim_coords):
         datatype = 'timeprofile'
-    elif (ndims == 3 and 'time' in dim_coords and 'depth' in dim_coords):
+    elif (ndims == 3 and 'time' in dim_coords and
+          'depth' in dim_or_aux_coords):
         datatype = 'timetransect'
+    elif (ndims == 2 and 'depth' in dim_or_aux_coords
+          and 'latitude' in aux_coords):
+        datatype = 'transect'
     else:
         print(cube)
         print(f'dim coords {dim_coords}')
@@ -565,7 +571,8 @@ def crop_invalid_depths(cube):
     Removes depth values that have all invalid values.
     """
     datatype = get_cube_datatype(cube)
-    assert datatype in ['timeprofile', 'timetransect'], 'Invalid cube datatype'
+    assert datatype in ['timeprofile', 'timetransect', 'transect'], \
+        'Invalid cube datatype'
     depth_ix = cube.coord_dims('depth')
     #assert len(depth_ix) == 1
     depth_ix = depth_ix[0]

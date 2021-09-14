@@ -25,3 +25,4 @@ from . import nemo_reader  # NOQA
 from . import cmems_reader  # NOQA
 from . import ices_reader  # NOQA
 from . import statistics  # NOQA
+from . import numpy_interface  # NOQA
