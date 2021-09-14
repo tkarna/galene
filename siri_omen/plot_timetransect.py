@@ -135,7 +135,7 @@ def plot_timetransect(cube, time_index, ax, title=None,
         data_id = _cube.attributes['dataset_id']
         if label_alias is not None:
             data_id = label_alias.get(data_id, data_id)
-        date_str = '{:%Y-%m-%d %H:%M}'.format(date)
+        date_str = date.strftime('%Y-%m-%d %H:%M')
         title = ' '.join([loc, data_id, date_str])
         ax.set_title(title)
     ax.set_ylabel(ylabel)
