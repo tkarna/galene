@@ -175,6 +175,8 @@ def process_cvs_file(cvs_filename, station_file, dataset_id):
         cast = {}
         # convert lists to arrays
         for field in list_dict:
+            if field not in ['TEMP', 'PSAL', 'PRES', 'Latitude', 'Longitude', 'yyyy-mm-ddThh:mm']:
+                continue
             if len(set(list_dict[field])) == 1:
                 # single value, purge list
                 value = list_dict[field][0]
