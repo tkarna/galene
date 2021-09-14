@@ -33,8 +33,12 @@ symmetric_vars = [
 
 def get_depth_grid(cube):
     coord = cube.coord('depth')
-    assert coord.has_bounds()
-    x = numpy.vstack((coord.bounds[0, :, 0], coord.bounds[:, :, 1]))
+    if not coord.has_bounds():
+        coord.guess_bounds()
+    if len(coord.shape) == 2:
+        x = numpy.vstack((coord.bounds[0, :, 0], coord.bounds[:, :, 1]))
+    elif len(coord.shape) == 1:
+        x = numpy.hstack((coord.bounds[0, 0], coord.bounds[:, 1]))
     x[~numpy.isfinite(x)] = 0.0
     return x
 
@@ -71,20 +75,23 @@ def plot_timetransect(cube, time_index, ax, title=None,
     """
     fig = ax.figure
     _cube = utility.crop_invalid_depths(cube)
-    if isinstance(time_index, datetime.datetime):
-        tolerance = datetime.timedelta(seconds=1)
-        _cube = utility.constrain_cube_time(cube,
-                                            start_time=time_index - tolerance,
-                                            end_time=time_index + tolerance)
-        assert sum(_cube.coord('time').shape) == 1
-    else:
-        i_time = cube.coord_dims('time')
-        assert len(i_time) == 1
-        i_time = i_time[0]
-        filter = [slice(None)] * len(cube.shape)
-        filter[i_time] = time_index
-        filter = tuple(filter)
-        _cube = cube[filter]
+    dtype = utility.get_cube_datatype(_cube)
+    assert dtype in ['timetransect', 'transect']
+    if dtype == 'timetransect':
+        if isinstance(time_index, datetime.datetime):
+            tolerance = datetime.timedelta(seconds=1)
+            _cube = utility.constrain_cube_time(_cube,
+                                                start_time=time_index - tolerance,
+                                                end_time=time_index + tolerance)
+            assert sum(_cube.coord('time').shape) == 1
+        else:
+            i_time = _cube.coord_dims('time')
+            assert len(i_time) == 1
+            i_time = i_time[0]
+            filter = [slice(None)] * len(_cube.shape)
+            filter[i_time] = time_index
+            filter = tuple(filter)
+            _cube = _cube[filter]
     date = utility.get_cube_datetime(_cube, 0)
 
     z = -get_depth_grid(_cube)
@@ -117,7 +124,8 @@ def plot_timetransect(cube, time_index, ax, title=None,
     _cube = utility.drop_singleton_dims(_cube)
     data = _cube.data.copy()
     # duplicate coords for full cell plotting
-    z = numpy.repeat(z, 2, axis=1)
+    if len(z.shape) == 2:
+        z = numpy.repeat(z, 2, axis=1)
     data = numpy.repeat(data, 2, axis=1)[:, :-1]
     x_along = numpy.repeat(x_along, 2)[1:-1]
     kw = {}
