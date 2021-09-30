@@ -231,7 +231,8 @@ def get_cube_datatype(cube):
     elif (ndims == 1 and 'depth' in dim_coords and 'time' in scalar_coords and
             len(aux_coords) == 0):
         datatype = 'profile'
-    elif (ndims == 2 and 'time' in dim_coords and 'depth' in dim_coords):
+    elif (ndims == 2 and 'time' in dim_coords and 'depth' in dim_coords and
+          'latitude' not in aux_coords):
         datatype = 'timeprofile'
     elif (ndims == 3 and 'time' in dim_coords and
           'depth' in dim_or_aux_coords):
