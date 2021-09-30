@@ -125,18 +125,16 @@ def create_transect_cube(latitude, longitude, depth, values, time,
 
     # define time coordinate
     time_units_obj = cf_units.Unit(time_units, calendar=calendar)
-    time_coord = iris.coords.AuxCoord(time, standard_name='time',
-                                      units=time_units_obj)
-
-    # add time coordinate
     if isinstance(time, Iterable):
-        cube.add_aux_coord(time_coord, 1)
+        time_coord = iris.coords.DimCoord(time, standard_name='time', units=time_units_obj)
+        cube.add_dim_coord(time_coord, 1)
     else:
-        cube.add_aux_coord(time_coord)
+        time_coord = iris.coords.AuxCoord(time, standard_name='time', units=time_units_obj)
+        cube.add_aux_coord(time_coord, 1)
 
     # add aux coords
-    dep_coord = iris.coords.AuxCoord(depth, standard_name='depth', units='m')
-    cube.add_aux_coord(dep_coord, 0)
+    dep_coord = iris.coords.DimCoord(depth, standard_name='depth', units='m')
+    cube.add_dim_coord(dep_coord, 0)
 
     lat_coord = iris.coords.AuxCoord(latitude, standard_name='latitude',
                                      units='degree_north')
