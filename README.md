@@ -2,6 +2,9 @@
 
 Post-processing tools for NEMO ocean model outputs.
 
+**NOTE**: `siri-omen` has moved: the package is now called `galene` and can be found at
+[https://github.com/tkarna/galene](https://github.com/tkarna/galene).
+
 ## Installation
 
 ### Install Iris
@@ -69,3 +72,4 @@ disk.
 
 To support reading in various model output files, some metadata editing may be
 necssary. See `siri_omen/nemo_reader.py`.
+
