@@ -1,7 +1,8 @@
 """
 Make time series plots.
 """
-from siri_omen import *
+import galene as ga
+import datetime
 
 data_id_list = [
     'cmems-nrt',
@@ -16,11 +17,11 @@ end_time = datetime.datetime(2018, 7, 1)
 for var in var_list:
     dataset_list = []
     for data_id in data_id_list:
-        d = read_dataset(data_id, 'timeseries', var)
+        d = ga.read_dataset(data_id, 'timeseries', var)
         dataset_list.append(d)
 
     # find pairs
-    pairs = find_station_pairs(*dataset_list)
+    pairs = ga.find_station_pairs(*dataset_list)
 
     for key in pairs:
         try:
@@ -32,11 +33,9 @@ for var in var_list:
             data_id_str = '-'.join(data_id_list)
             datatype = 'timeseries'
             outdir = os.path.join('plots', data_id_str, datatype, var)
-            save_timeseries_figure(cube_list,
-                                   output_dir=outdir,
-                                   alpha=0.7,
-                                   start_time=start_time,
-                                   end_time=end_time,
-                                   time_extent='intersection')
+            ga.save_timeseries_figure(
+                cube_list, output_dir=outdir, alpha=0.7, start_time=start_time,
+                end_time=end_time, time_extent='intersection'
+            )
         except Exception:
             pass

@@ -1,7 +1,9 @@
 """
 Read NEMO timeprofiles and individual profiles at observation time stamps.
 """
-from siri_omen import *
+import galene as ga
+import iris
+import numpy
 
 var_list = ['temp', 'psal']
 obs_id = 'ices-ctd'
@@ -32,7 +34,7 @@ def extract_profile(model_profile, obs_profile, interpolate_depth=False):
         with scalar variables time, latitude, longitude
     """
     # drop singular lat,lon coords
-    m = drop_singleton_dims(model_profile)
+    m = ga.drop_singleton_dims(model_profile)
 
     # interpolate in time
     time_var = obs_profile.coord('time')
@@ -60,14 +62,14 @@ def extract_profile(model_profile, obs_profile, interpolate_depth=False):
 
 
 for var in var_list:
-    dataset = read_dataset(dataset_id, 'timeprofile', var)
-    obs_dataset = read_dataset(obs_id, 'profile', var)
+    dataset = ga.read_dataset(dataset_id, 'timeprofile', var)
+    obs_dataset = ga.read_dataset(obs_id, 'profile', var)
 
-    pairs = find_station_pairs(obs_dataset, dataset)
+    pairs = ga.find_station_pairs(obs_dataset, dataset)
 
     for key in pairs:
         o = pairs[key][obs_id]
         m = pairs[key][dataset_id]
 
         cube = extract_profile(m, o)
-        save_cube(cube)
+        ga.save_cube(cube)

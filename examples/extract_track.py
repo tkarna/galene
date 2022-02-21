@@ -1,5 +1,5 @@
 import iris
-import siri_omen as so
+import galene as ga
 import datetime
 from scipy.spatial import cKDTree
 import numpy
@@ -54,10 +54,10 @@ def extract_track_from_cube(nemo_cube, track_cube, time_pad, dataset_id,
     Extract surface track from NEMO 2d cube
     """
     # crop track time
-    st = so.get_cube_datetime(nemo_cube, 0)
-    et = so.get_cube_datetime(nemo_cube, -1)
+    st = ga.get_cube_datetime(nemo_cube, 0)
+    et = ga.get_cube_datetime(nemo_cube, -1)
     # NOTE do not include start instant to have non-overlapping windows
-    target = so.constrain_cube_time(
+    target = ga.constrain_cube_time(
         track_cube, st - time_pad, et + time_pad, include_start=False
     )
 
@@ -83,7 +83,7 @@ def extract_track_from_cube(nemo_cube, track_cube, time_pad, dataset_id,
 
     values = nemo_cube.data[i_time, i_lat, i_lon]
 
-    sname = so.nemo_reader.map_nemo_sname_to_standard[nemo_cube.standard_name]
+    sname = ga.nemo_reader.map_nemo_sname_to_standard[nemo_cube.standard_name]
     cube = iris.cube.Cube(values, standard_name=sname, units=nemo_cube.units)
 
     # copy coordinates
@@ -107,7 +107,7 @@ def extract_from_single_nemo_file(src_file, track_cube, var, dataset_id,
     """
     nemo_var = var_to_nemo_var[var]
     print(f'Reading {nemo_var} from {src_file}')
-    nemo_cube = so.nemo_reader.load_nemo_output(src_file, nemo_var)
+    nemo_cube = ga.nemo_reader.load_nemo_output(src_file, nemo_var)
     # compute time window for the model data
     # the time range is
     # [first_time_stamp - time_step/2, last_time_stamp + time_step/2]
@@ -134,7 +134,7 @@ def extract_from_single_nemo_file(src_file, track_cube, var, dataset_id,
             pass
     if len(cube_list) == 0:
         return None
-    cube = so.concatenate_cubes(cube_list)
+    cube = ga.concatenate_cubes(cube_list)
     # sanity checks, all values should be valid
     assert not cube.data.mask.any(), 'Some extracted values are masked'
     assert numpy.isfinite(cube.data).all(), 'Some extracted values are invalid'
@@ -147,7 +147,7 @@ def extract_track(nemo_file_pattern, track_file, var_list, dataset_id, chunksize
     """
     Extract surface track from a series of NEMO output files.
     """
-    track_cube = so.load_cube(dst_file)
+    track_cube = ga.load_cube(dst_file)
 
     for var in var_list:
         file_list = glob.glob(nemo_file_pattern)
@@ -159,8 +159,8 @@ def extract_track(nemo_file_pattern, track_file, var_list, dataset_id, chunksize
             )
             if c is not None:
                 cube_list.append(c)
-        cube = so.concatenate_cubes(cube_list)
-        so.save_cube(cube)
+        cube = ga.concatenate_cubes(cube_list)
+        ga.save_cube(cube)
 
 
 # variables to extract

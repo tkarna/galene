@@ -9,7 +9,7 @@ from bokeh.palettes import Category10 as palette
 import itertools
 import numpy
 import argparse
-import siri_omen as so
+import galene as ga
 import cftime
 from dateutil.parser import parse as dateparse
 import datetime
@@ -54,7 +54,7 @@ def load_cubes(file_list, start_time=None, end_time=None):
         c = None
         for v in var_list:
             try:
-                c = so.load_cube(f, v,
+                c = ga.load_cube(f, v,
                                  start_time=start_time, end_time=end_time)
                 break
             except Exception:
@@ -94,7 +94,7 @@ def parse_args():
         assert args.location_name is not None, 'location_name must be set'
         assert args.variable is not None, 'variable must be set'
         for dataset_id in args.datasets.split(','):
-            dset = so.read_dataset(
+            dset = ga.read_dataset(
                 dataset_id, 'timeseries', args.variable,
                 location_name=args.location_name,
                 start_time=sd, end_time=ed, verbose=False

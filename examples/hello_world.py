@@ -1,7 +1,11 @@
 """
 A simple example of time series data processing.
 """
-from siri_omen import *
+import galene as ga
+import numpy
+import iris
+import cf_units
+import datetime
 
 
 def make_timeseries_cube(time, values, standard_name, units,
@@ -42,8 +46,6 @@ def make_timeseries_cube(time, values, standard_name, units,
     Timeseries as a Iris Cube object.
 
     """
-    import iris
-    import cf_units
     msg = 'length of time and values arrays does not match.'
     assert len(time) == len(values), msg
 
@@ -71,9 +73,8 @@ def make_timeseries_cube(time, values, standard_name, units,
 
     return cube
 
-# ------------------------------------------------------------------------------
-# fabricate data to represent observations
 
+# fabricate data to represent observations
 t = numpy.linspace(0, 24*3600*25, 500)
 data = numpy.sin(2*numpy.pi*t/(24*3600))
 cube = make_timeseries_cube(
@@ -83,55 +84,41 @@ cube = make_timeseries_cube(
 cube.attributes['dataset_id'] = 'observation'  # string to identify data origin
 cube.attributes['location_name'] = 'Marviken'  # string to identify location
 
-# ------------------------------------------------------------------------------
 # save cube to disk in canonical format (uses metadata to generate filename)
+ga.save_cube(cube)
 
-save_cube(cube)
-
-# ------------------------------------------------------------------------------
 # fabricate data to represent a model
-
 data = 0.8*data + 0.1
 cube = make_timeseries_cube(
     t, data, 'water_surface_height_above_reference_datum', 'm')
 cube.attributes['dataset_id'] = 'model-run-01'
 cube.attributes['location_name'] = 'Marviken'
-save_cube(cube)
+ga.save_cube(cube)
 
-# ------------------------------------------------------------------------------
 # load cubes from disk
 # 'slev' is a short name for 'water_surface_height_above_reference_datum'
-
-ds_dict = read_dataset('observation', 'timeseries',
-                       'slev',
-                       location_name='Marviken')
+ds_dict = ga.read_dataset('observation', 'timeseries', 'slev',
+                          location_name='Marviken')
 o = ds_dict[list(ds_dict.keys())[0]]
-ds_dict = read_dataset('model-run-01', 'timeseries',
-                       'slev',
-                       location_name='Marviken')
+ds_dict = ga.read_dataset('model-run-01', 'timeseries', 'slev',
+                          location_name='Marviken')
 m = ds_dict[list(ds_dict.keys())[0]]
 
-# ------------------------------------------------------------------------------
 # crop time in observation data
-
 start_time = datetime.datetime(1970, 1, 5)
 end_time = None
-o = constrain_cube_time(o, start_time, end_time)
+o = ga.constrain_cube_time(o, start_time, end_time)
 
-# ------------------------------------------------------------------------------
 # make a time series plot
-
 cube_list = [o, m, ]  # list of cubes to plot
-save_timeseries_figure(
+ga.save_timeseries_figure(
     cube_list,
     time_extent='union',  # choose how the time limits are chosen
 )
 
-# ------------------------------------------------------------------------------
 # make taylor-target plot
-
 cube_pairs = [(o, m), ]  # list of (observation, model) pairs to plot
-save_taylor_target_diagram(
+ga.save_taylor_target_diagram(
     cube_pairs,
     label_attr='location_name',  # choose label attrib
 )

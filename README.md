@@ -1,15 +1,13 @@
-# siri-omen | nemo-iris
+# galene
 
-Post-processing tools for NEMO ocean model outputs.
+Post-processing tools for ocean model outputs.
 
-**NOTE**: `siri-omen` has moved: the package is now called `galene` and can be found at
-[https://github.com/tkarna/galene](https://github.com/tkarna/galene).
 
 ## Installation
 
 ### Install Iris
 
-`siri-omen` uses [Iris](https://scitools.org.uk/iris/docs/latest/) as it's
+`galene` uses [Iris](https://scitools.org.uk/iris/docs/latest/) as it's
 data model. Iris is easiest to install with Anaconda Python. These instructions have been tested for Anaconda version `Anaconda3-2019.03`.
 
 It recommended to create a specific conda environment for Iris, for example:
@@ -28,13 +26,13 @@ Then we can install Iris. See the Iris website for up-to-date [installation inst
 conda install -c conda-forge iris
 ```
 
-### Install siri-omen with pip
+### Install galene with pip
 
 Once Iris is installed, and the `iris` environment is active, install
-`siri-omen` with
+`galene` with
 
 ```bash
-pip install -e /path/to/siri-omen/repo/
+pip install -e /path/to/galene/repo/
 ```
 
 ## Features
@@ -48,7 +46,7 @@ pip install -e /path/to/siri-omen/repo/
 
 ## Data model
 
-`siri-omen` data model uses Iris Cube objects to represent data
+`galene` data model uses Iris Cube objects to represent data
 (see [Iris documentation](https://scitools.org.uk/iris/docs/latest/userguide/iris_cubes.html)).
 In addition, two metadata entries are required:
 
@@ -66,10 +64,10 @@ Four different kinds of geospatial data are suported:
 
 ## Reading netCDF data
 
-`siri-omen` can read netCDF files that contain sufficient metadata.
+`galene` can read netCDF files that contain sufficient metadata.
 It is recommended to first generate Iris Cube objects and then store them to
 disk.
 
 To support reading in various model output files, some metadata editing may be
-necssary. See `siri_omen/nemo_reader.py`.
+necssary. See `galene/nemo_reader.py`.
 

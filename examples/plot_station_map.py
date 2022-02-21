@@ -1,5 +1,5 @@
-from siri_omen import *
-
+import galene as ga
+import datetime
 
 obs_id = 'cmems-nrt'
 mod_id = 'run001'
@@ -12,20 +12,20 @@ end_time = datetime.datetime(2018, 7, 1)
 
 data_id_list = [obs_id, mod_id]
 
-diag = GeographicPlot()
+diag = ga.GeographicPlot()
 diag.add_feature('land')
 diag.ax.set_prop_cycle(get_point_style_cycler())
 diag.add_title(' '.join([datatype, obs_id,
-                         map_var_standard_name[var].replace('_', ' ')]))
+                         ga.map_var_standard_name[var].replace('_', ' ')]))
 
 dataset_list = []
 for data_id in data_id_list:
-    d = read_dataset(data_id, 'timeseries', var,
-                     start_time=start_time, end_time=end_time)
+    d = ga.read_dataset(data_id, 'timeseries', var,
+                        start_time=start_time, end_time=end_time)
     dataset_list.append(d)
 
 # find pairs
-pairs = find_station_pairs(*dataset_list)
+pairs = ga.find_station_pairs(*dataset_list)
 
 cube_pairs = []
 for key in pairs:

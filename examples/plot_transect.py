@@ -1,7 +1,7 @@
 import numpy
 import matplotlib.pyplot as plt
-import siri_omen as so
-from siri_omen.numpy_interface import create_transect_cube
+import galene as ga
+from galene.numpy_interface import create_transect_cube
 import iris
 
 npoints = 40
@@ -28,8 +28,8 @@ cube = create_transect_cube(lat, lon, depth, values, time,
 print(cube)
 
 # save in standard format
-so.save_cube(cube)
+ga.save_cube(cube)
 
 # plot
-so.save_timetransect_figure([cube], None)
+ga.save_timetransect_figure([cube], None)
 plt.show()

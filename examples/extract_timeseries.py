@@ -1,17 +1,18 @@
 """
 Read NEMO timeprofiles and extract time series at observation depths.
 """
-from siri_omen import *
+import galene as ga
+import iris
 
 var_list = ['temp', 'psal']
 obs_id = 'cmems-nrt'
 dataset_id = 'run001'
 
 for var in var_list:
-    dataset = read_dataset(dataset_id, 'timeprofile', var)
-    obs_dataset = read_dataset(obs_id, 'timeseries', var)
+    dataset = ga.read_dataset(dataset_id, 'timeprofile', var)
+    obs_dataset = ga.read_dataset(obs_id, 'timeseries', var)
 
-    pairs = find_station_pairs(obs_dataset, dataset)
+    pairs = ga.find_station_pairs(obs_dataset, dataset)
 
     for key in pairs:
         o = pairs[key][obs_id]
@@ -36,6 +37,6 @@ for var in var_list:
                                            units='m')
             cube.add_aux_coord(dep_dim, None)
         # drop lon,lat dims
-        cube = drop_singleton_dims(cube)
+        cube = ga.drop_singleton_dims(cube)
 
-        save_cube(cube)
+        ga.save_cube(cube)
