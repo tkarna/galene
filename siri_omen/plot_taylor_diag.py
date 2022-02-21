@@ -231,7 +231,6 @@ class TaylorDiagram(object):
         kwargs.setdefault('bbox_to_anchor', (0.98, 1.0))
         nsamples = len(self.sample_points)
         ncolumns = int(numpy.ceil(float(nsamples) / 30))
-        kwargs.setdefault('ncol', ncolumns)
         self.ax.legend(numpoints=1, **kwargs)
 
     def add_title(self, title):
@@ -254,11 +253,12 @@ def _compute_pairwise_stats(cube_pairs, normalized, add_crmse_sign=False):
     for o, m in cube_pairs:
         try:
             obs_stats, mod_stats = get_cube_stats(o, m, normalized,
-                                                add_crmse_sign=add_crmse_sign)
+                                                  add_crmse_sign=add_crmse_sign)
             pair_stats.append((o, m, obs_stats, mod_stats))
         except AssertionError as e:
             print('Cannot compute statistics, skipping: {:} {:}'.format(
                 o.attributes['dataset_id'], o.attributes['location_name']))
+            raise e
     return pair_stats
 
 
@@ -267,6 +267,7 @@ def _plot_taylor(cube_pairs, ref_stddev, normalized,
                  fig=None, rect=None, add_legend=True,
                  label_attr='dataset_id', ref_label=None, title=None,
                  label_alias=None, style=None,
+                 std_range=None,
                  styler_args=None, legend_args=None):
 
     if fig is None:
@@ -274,6 +275,8 @@ def _plot_taylor(cube_pairs, ref_stddev, normalized,
     if ref_label is None:
         ref_label = '_'
     srange = (0, 1.49) if normalized else (0, 1.5)
+    if std_range is not None:
+        srange = (0, std_range)
     dia = TaylorDiagram(ref_stddev, label=ref_label, srange=srange,
                         fig=fig, rect=rect)
     dia.add_grid()
@@ -301,12 +304,17 @@ def _plot_taylor(cube_pairs, ref_stddev, normalized,
             seen.add(label)
         kw = {}
         kw['zorder'] = 2 + float(i)/10.
+        kw['markeredgecolor'] = 'none'
         if styler_args is not None:
             kw.update(styler.get_style(m))
         if style is not None:
             key = m.attributes.get(label_attr)
             if key is not None and key in style:
                 kw.update(style[key])
+            if label_attr != 'location_name':
+                key = m.attributes.get('location_name')
+                if key is not None and key in style:
+                    kw.update(style[key])
         dia.add_sample(m_stats['stddev'], m_stats['corrcoef'],
                        label=label, **kw)
     if add_legend:
