@@ -472,17 +472,17 @@ def load_cube(input_file=None, variable=None, dataset_id=None, datatype=None,
     return cube
 
 
-def save_cube(cube, root_dir=None, fname=None):
+def save_cube(cube, root_dir=None, fname=None, *args, **kwargs):
     """
     Saves a cube to disk.
     """
     if fname is None:
         fname = gen_filename(cube, root_dir=root_dir)
     print('Saving to {:}'.format(fname))
-    iris.save(cube, fname)
+    iris.save(cube, fname, *args, **kwargs)
 
 
-def align_cubes(first, second, scheme=None):
+def align_cubes(first, second, scheme=None, ignore_latlon=False):
     """
     Interpolate cubes on the same grid.
 
@@ -507,16 +507,20 @@ def align_cubes(first, second, scheme=None):
     for c in o.coords():
         a = c.points
         b = m.coord(c.name()).points
+        if ignore_latlon and c.name() in ['latitude', 'longitude']:
+            continue
         if (a.shape != b.shape or not numpy.allclose(a, b)):
             coord_name = c.name()
             break
-    assert coord_name is not None, 'Could not detect interpolation dimension.'
+    if coord_name is None:
+        Warning('Could not detect interpolation dimension, assuming cubes are aligned')
+        return m
 
     if scheme is None:
         scheme = iris.analysis.Linear(extrapolation_mode='mask')
     o_points = o.coord(coord_name).points
     assert len(m.coord(coord_name).points) > 1, \
-        'Cannot interpolate with one data point'
+        f'Cannot interpolate with one data point: {coord_name}\n {str(m)}'
     m2 = m.interpolate([(coord_name, o_points)], scheme)
 
     return m2
@@ -558,9 +562,10 @@ def merge_cubes(cube_list):
     return cube
 
 
-def compute_cube_statistics(reference, predicted):
+def compute_cube_statistics(reference, predicted, ignore_latlon=True):
 
-    predicted_alinged = align_cubes(reference, predicted)
+    predicted_alinged = align_cubes(reference, predicted,
+                                    ignore_latlon=ignore_latlon)
 
     r = reference.data
     p = predicted_alinged.data
