@@ -7,7 +7,7 @@ Post-processing tools for ocean model outputs.
 
 ### Install Iris
 
-`galene` uses [Iris](https://scitools.org.uk/iris/docs/latest/) as it's
+`galene` uses [Iris](https://scitools-iris.readthedocs.io/en/stable/) as it's
 data model. Iris is easiest to install with Anaconda Python. These instructions have been tested for Anaconda version `Anaconda3-2019.03`.
 
 It recommended to create a specific conda environment for Iris, for example:
@@ -20,7 +20,7 @@ The environment must be activated prior usage:
 conda activate iris
 ```
 
-Then we can install Iris. See the Iris website for up-to-date [installation instructions](https://scitools.org.uk/iris/docs/latest/installing.html).
+Then we can install Iris. See the Iris website for up-to-date [installation instructions](https://scitools-iris.readthedocs.io/en/stable/installing.html).
 
 ```bash
 conda install -c conda-forge iris
@@ -32,7 +32,7 @@ Once Iris is installed, and the `iris` environment is active, install
 `galene` with
 
 ```bash
-pip install -e /path/to/galene/repo/
+pip install -e /path/to/galene/
 ```
 
 ## Features
@@ -47,20 +47,24 @@ pip install -e /path/to/galene/repo/
 ## Data model
 
 `galene` data model uses Iris Cube objects to represent data
-(see [Iris documentation](https://scitools.org.uk/iris/docs/latest/userguide/iris_cubes.html)).
+(see [Iris documentation](https://scitools-iris.readthedocs.io/en/stable/userguide/iris_cubes.html)).
 In addition, two metadata entries are required:
 
 1. `cube.attributes['dataset_id']`: A string that identifies the data set,
     e.g. `mynemorun1` or `observations`
-2. `cube.attributes['location_name']`: A string that identifices the spatial
+2. `cube.attributes['location_name']`: A string that identifies the spatial
     location of the data, e.g. station or transect identifier.
 
-Four different kinds of geospatial data are suported:
+Currently these kinds of geospatial data are supported (dimension coordinates in parentheses):
 
-1. `point`: pointwise data, data dimensions: `()`
-2. `timeseries`: scalar time series data, data dimensions: `('time')`
-3. `profile`: vertical profile data, data dimensions: `('depth')`
-4. `timeprofile`: time dependent vertical profile data, data dimensions: `('time', 'depth')`
+- timeseries: (time) + auxiliary scalar depth
+- surfacetrack: (time) + auxiliary latitude, longitude, scalar depth
+- profile: (depth) + auxiliary scalar latitude, longitude
+- timeprofile: (time, depth)
+- transect: (depth, index) + auxiliary latitude, longitude, depth
+- timetransect: (time, depth, index)
+
+All data types are stored as a `Cube` objects. The function `get_cube_datatype(cube)` returns the data type as a string.
 
 ## Reading netCDF data
 
@@ -69,5 +73,4 @@ It is recommended to first generate Iris Cube objects and then store them to
 disk.
 
 To support reading in various model output files, some metadata editing may be
-necssary. See `galene/nemo_reader.py`.
-
+necessary. See `galene/nemo_reader.py`.
